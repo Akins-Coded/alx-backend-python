@@ -45,9 +45,25 @@ def connect_to_prodev(): # connects the the ALX_prodev database in MYSQL
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         return None
-    
-def create_table(connection):# creates a table user_data if it does not exists with the required fields
-    
+def create_table(connection):
+    """Creates a table 'user_data' if it does not exist with the required fields"""
+    try:
+        cursor = connection.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_data (
+                id VARCHAR(36) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                age INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        connection.commit()
+        cursor.close()
+        print("Table 'user_data' created successfully.")
+    except Exception as e:
+        print(f"Error creating table: {e}")
+
 
 def insert_data(connection, data):
     pass  # inserts data in the database if it does not exist
