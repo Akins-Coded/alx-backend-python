@@ -65,5 +65,24 @@ def create_table(connection):
         print(f"Error creating table: {e}")
 
 
-def insert_data(connection, data):
-    pass  # inserts data in the database if it does not exist
+def insert_data(connection, user_data): # inserts data in the database if it does not exist
+     """Insert data into user_data table from CSV file"""
+try:
+        cursor = connection.cursor()
+        with open(csv_filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                # Check if email already exists to avoid duplicates
+                cursor.execute(f"SELECT email FROM {TABLE_NAME} WHERE email = %s", (row['email'],))
+                if cursor.fetchone():
+                    continue
+
+                uid = str(uuid.uuid4())
+                cursor.execute(f"""
+                    INSERT INTO {TABLE_NAME} (user_id, name, email, age)
+                    VALUES (%s, %s, %s, %s)
+                """, (uid, row['name'], row['email'], row['age']))
+        connection.commit()
+        cursor.close()
+except Exception as e:
+        print(f"Error inserting data: {e}")
