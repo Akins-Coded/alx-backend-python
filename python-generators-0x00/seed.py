@@ -13,7 +13,7 @@ def connect_db(host, user, password, db_name, port=3306):
         connection = mysql.connector.connect(
             host="Coded-Something",
             user="root",
-            password="Akinscoded47@",
+            password="#########",
             
             port=3306
         )
