@@ -2,20 +2,17 @@ import mysql.connector
 import csv
 import uuid
 
-
 DB_NAME = 'ALX_prodev'
-TABLE_NAME = 'user_data'
-
+TABLE_NAME = 'users'
 
 def connect_db(host, user, password, db_name, port=3306):
-    """Connect to a MySQL database and return the connection object"""
+    """Connect to a MySQL server without selecting a database."""
     try:
         connection = mysql.connector.connect(
-            host="Coded-Something",
-            user="root",
-            password="#########",
-            
-            port=3306
+            host=host,
+            user=user,
+            password=##########,  # Replace with actual password
+            port=port
         )
         if connection.is_connected():
             print("Connection successful")
@@ -24,7 +21,9 @@ def connect_db(host, user, password, db_name, port=3306):
         print(f"Error: {e}")
         return None
 
-def create_database(connection):  # creates the database ALX_prodev if it does not exist
+
+def create_database(connection):
+    """Create the ALX_prodev database if it doesn't exist."""
     try:
         cursor = connection.cursor()
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
@@ -32,25 +31,29 @@ def create_database(connection):  # creates the database ALX_prodev if it does n
         cursor.close()
     except mysql.connector.Error as err:
         print(f"Failed creating database: {err}")
-        
-def connect_to_prodev(): # connects the the ALX_prodev database in MYSQL
+
+
+def connect_to_prodev():
+    """Connect to the ALX_prodev database."""
     try:
-        my_db = mysql.connector.connect(
+        connection = mysql.connector.connect(
             host="localhost",
-            user="root",        # change if using a different MySQL user
-            password="your_password",  # update with your actual password
+            user="root",
+            password="#########",  # Replace with actual password
             database=DB_NAME
         )
-        return my_db
+        return connection
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         return None
+
+
 def create_table(connection):
-    """Creates a table 'user_data' if it does not exist with the required fields"""
+    """Create the users table if it does not exist."""
     try:
         cursor = connection.cursor()
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS user_data (
+            CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(36) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) NOT NULL UNIQUE,
@@ -60,29 +63,30 @@ def create_table(connection):
         """)
         connection.commit()
         cursor.close()
-        print("Table 'user_data' created successfully.")
+        print("Table 'users' created successfully.")
     except Exception as e:
         print(f"Error creating table: {e}")
 
 
-def insert_data(connection, user_data): # inserts data in the database if it does not exist
-     """Insert data into user_data table from CSV file"""
-try:
+def insert_data(connection, csv_filename):
+    """Insert data into the users table from a CSV file."""
+    try:
         cursor = connection.cursor()
         with open(csv_filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                # Check if email already exists to avoid duplicates
+                # Check if email already exists
                 cursor.execute(f"SELECT email FROM {TABLE_NAME} WHERE email = %s", (row['email'],))
                 if cursor.fetchone():
                     continue
 
-                uid = str(uuid.uuid4())
+                user_id = str(uuid.uuid4())
                 cursor.execute(f"""
-                    INSERT INTO {TABLE_NAME} (user_id, name, email, age)
+                    INSERT INTO {TABLE_NAME} (id, name, email, age)
                     VALUES (%s, %s, %s, %s)
-                """, (uid, row['name'], row['email'], row['age']))
+                """, (user_id, row['name'], row['email'], row['age']))
         connection.commit()
         cursor.close()
-except Exception as e:
+        print("Data inserted successfully.")
+    except Exception as e:
         print(f"Error inserting data: {e}")
