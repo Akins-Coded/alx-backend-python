@@ -1,26 +1,30 @@
 import mysql.connector
 import csv
 import uuid
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 DB_NAME = 'ALX_prodev'
 TABLE_NAME = 'users'
 
-def connect_db(host, user, password, db_name, port=3306):
-    """Connect to a MySQL server without selecting a database."""
+def connect_db():
+    """Connect to MySQL server (without selecting a specific DB)."""
     try:
         connection = mysql.connector.connect(
-            host=host,
-            user=user,
-            password=##########,  # Replace with actual password
-            port=port
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT", 3306)),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD")
         )
         if connection.is_connected():
-            print("Connection successful")
+            print("✅ Connection successful")
             return connection
     except mysql.connector.Error as e:
-        print(f"Error: {e}")
-        return None
-
+        print(f"❌ Error: {e}")
+    return None
 
 def create_database(connection):
     """Create the ALX_prodev database if it doesn't exist."""
@@ -29,31 +33,33 @@ def create_database(connection):
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
         connection.commit()
         cursor.close()
+        print("✅ Database checked/created.")
     except mysql.connector.Error as err:
-        print(f"Failed creating database: {err}")
-
+        print(f"❌ Failed creating database: {err}")
 
 def connect_to_prodev():
     """Connect to the ALX_prodev database."""
     try:
         connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="#########",  # Replace with actual password
-            database=DB_NAME
+            host=os.getenv("DB_HOST"),
+            port=int(os.getenv("DB_PORT", 3306)),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
         )
-        return connection
+        if connection.is_connected():
+            print("✅ Connected to ALX_prodev")
+            return connection
     except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return None
-
+        print(f"❌ Error: {err}")
+    return None
 
 def create_table(connection):
     """Create the users table if it does not exist."""
     try:
         cursor = connection.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
+        cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
                 id VARCHAR(36) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) NOT NULL UNIQUE,
@@ -63,10 +69,9 @@ def create_table(connection):
         """)
         connection.commit()
         cursor.close()
-        print("Table 'users' created successfully.")
+        print("✅ Table 'users' created successfully.")
     except Exception as e:
-        print(f"Error creating table: {e}")
-
+        print(f"❌ Error creating table: {e}")
 
 def insert_data(connection, csv_filename):
     """Insert data into the users table from a CSV file."""
@@ -75,11 +80,9 @@ def insert_data(connection, csv_filename):
         with open(csv_filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                # Check if email already exists
                 cursor.execute(f"SELECT email FROM {TABLE_NAME} WHERE email = %s", (row['email'],))
                 if cursor.fetchone():
                     continue
-
                 user_id = str(uuid.uuid4())
                 cursor.execute(f"""
                     INSERT INTO {TABLE_NAME} (id, name, email, age)
@@ -87,6 +90,6 @@ def insert_data(connection, csv_filename):
                 """, (user_id, row['name'], row['email'], row['age']))
         connection.commit()
         cursor.close()
-        print("Data inserted successfully.")
+        print("✅ Data inserted successfully.")
     except Exception as e:
-        print(f"Error inserting data: {e}")
+        print(f"❌ Error inserting data: {e}")
