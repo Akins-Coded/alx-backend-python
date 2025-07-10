@@ -23,3 +23,7 @@ class ExecuteQuery:
             self.conn.commit()
             self.conn.close()
 # ✅ Use the context manager to execute a query and print results
+with ExecuteQuery("users.db", "SELECT * FROM users") as results:
+    print("[RESULTS]", results) # ✅ Use the context manager to execute a query with parameters
+with ExecuteQuery("users.db", "SELECT * FROM users WHERE age > ?", (25,)) as results:
+    print("[RESULTS]", results)  # ✅ Use the context manager to execute an insert query    
