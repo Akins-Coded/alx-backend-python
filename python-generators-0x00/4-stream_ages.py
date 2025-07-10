@@ -2,6 +2,7 @@ import mysql.connector
 from dotenv import load_dotenv
 import os
 
+
 def stream_user_ages():
     """Generator that streams user ages from the database."""
 
@@ -14,14 +15,14 @@ def stream_user_ages():
         port=int(os.getenv("DB_PORT", 3306)),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
+        database=os.getenv("DB_NAME"),
     )
 
     cursor = connection.cursor(dictionary=True)
     cursor.execute("SELECT age FROM users")
 
     for row in cursor:  # Loop 1
-        yield row['age']
+        yield row["age"]
 
     cursor.close()
     connection.close()

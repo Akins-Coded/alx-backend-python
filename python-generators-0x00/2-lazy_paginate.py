@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-seed = __import__('seed')
+seed = __import__("seed")
 
 
 def paginate_users(page_size, offset):
@@ -9,6 +9,7 @@ def paginate_users(page_size, offset):
     rows = cursor.fetchall()
     connection.close()
     return rows
+
 
 def lazy_pagination(page_size):
     """Generator that lazily paginates through user_data table."""
