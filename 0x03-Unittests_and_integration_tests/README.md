@@ -1,29 +1,40 @@
-# Unit Testing Guide for `utils.py`
+# 🧪 Unittests for `utils.py`
 
-This document explains the testing process for the utility functions defined in `utils.py`.
-
-## 📁 Project Structure
-
-
-## 🧪 Tested Functions
-
-We are testing the following functions from `utils.py`:
-
-- `access_nested_map`
-- `get_json` *(optional, not covered in this file yet)*
-- `memoize` *(optional, not covered in this file yet)*
-
-### ✔️ `access_nested_map`
-
-This function takes a nested mapping and a path (sequence of keys) and returns the value found at that path. The function raises `KeyError` if any key is not found along the path.
+This project provides unittests for a utility module `utils.py`, written in Python 3.7 and designed to be compliant with strict coding and documentation standards.
 
 ---
 
-## 🛠️ Setting Up the Environment
+## 📄 Project Description
 
-### 1. Install Python Dependencies
+The `utils.py` module contains generic utility functions used in other parts of a codebase, specifically:
 
-Ensure you have Python 3.6+ and the `parameterized` module installed:
+- `access_nested_map()`: Accesses values in nested dictionaries using a sequence of keys.
+- `get_json()`: Retrieves JSON content from a given URL.
+- `memoize()`: A method decorator that caches method return values per instance.
+
+This repo contains test coverage for `access_nested_map()` with both **positive** and **negative** test cases.
+
+---
+
+## 🛠️ Requirements
+
+This project is tested and executed under:
+
+- **Python 3.7**
+- **Ubuntu 18.04 LTS**
+- **pycodestyle 2.5**
+
+Ensure all files are:
+- Executable (`chmod +x file.py`)
+- PEP8 compliant
+- Properly documented with meaningful docstrings
+- Fully type-annotated
+
+---
+
+## 📦 Installation
+
+Install Python dependencies:
 
 ```bash
 pip install parameterized
