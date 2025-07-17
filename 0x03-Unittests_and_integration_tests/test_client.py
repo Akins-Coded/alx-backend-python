@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Unittest module for testing GithubOrgClient behavior."""
-
+import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
 from client import GithubOrgClient
@@ -49,8 +49,8 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(result, expected)
 
     @patch('client.get_json')
-    def test_public_repo(self, mock_get_json):
-        """ Unit-tes GithubOrgClint.public_repos with mocks """
+    def test_public_repos(self, mock_get_json):
+        """Unit-test GithubOrgClient.public_repos with mocks"""
         mock_repos_payload = [
             {"name": "repo1", "license": {"key": "mit"}},
             {"name": "repo2", "license": {"key": "apache-2.0"}},
@@ -58,18 +58,25 @@ class TestGithubOrgClient(unittest.TestCase):
         ]
         mock_get_json.return_value = mock_repos_payload
 
-        with patch.object(GithubOrgClient, "_public_repos_url", new_callable=PropertyMock) as mock_public_repos_url:
-            mock_public_repos_url.return_value = "https://api.github.com/orgs/test-org/repos"
-            
+        with patch.object(
+            GithubOrgClient,
+            "_public_repos_url",
+            new_callable=PropertyMock
+        ) as mock_public_repos_url:
+            mock_public_repos_url.return_value = (
+                "https://api.github.com/orgs/test-org/repos"
+            )
+
             client = GithubOrgClient("test-org")
             result = client.public_repos()
 
-            expected = ['repo1', 'repo2', 'repo3']
+            expected = ["repo1", "repo2", "repo3"]
             self.assertEqual(result, expected)
 
-            # Assertions for mock calls
-            mock_public_url.assert_called_once()
-            mock_get_json.assert_called_once_with("https://api.github.com/orgs/test-org/repos")
+            mock_public_repos_url.assert_called_once()
+            mock_get_json.assert_called_once_with(
+                "https://api.github.com/orgs/test-org/repos"
+            )
 
 if __name__ == "__main__":
     unittest.main()
