@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "chat.apps.ChatConfig",  # Custom app for chat functionality
+    "chats.apps.ChatsConfig",  # Custom app for chat functionality
     "rest_framework",  # Django REST framework for API support
 ]
 
@@ -137,3 +137,5 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,  # adjust to your needs
 }
+
+AUTH_USER_MODEL = 'chats.User'
