@@ -1,30 +1,69 @@
+# Unittests and Integration Tests
 
----
+This project focuses on writing unit and integration tests for Python code using the `unittest` module. The goal is to ensure code reliability, correctness, and maintainability through testing.
 
-## 🛠️ Utilities in `utils.py`
+## 📁 Directory Structure
 
-- `access_nested_map(nested_map, path)`  
-  Accesses a nested dictionary structure using a sequence of keys.
+```
+.
+├── client.py                  # GitHubOrgClient implementation
+├── utils.py                   # Utility functions with caching and HTTP get_json
+├── test_client.py             # Unit and integration tests for client.py
+├── test_utils.py              # Unit tests for utils.py
+├── fixtures.py                # Static payloads for integration testing
+└── README.md                  # Project documentation (this file)
+```
 
-- `get_json(url)`  
-  Fetches and parses JSON from a remote HTTP GET request.
+## 🔧 Features Covered
 
-- `memoize(fn)`  
-  Decorator that caches the result of a method the first time it is called.
-
-Each of these functions is unit tested in `test_utils.py`.
-
----
+- **Unit testing**
+- **Integration testing**
+- **Mocking external HTTP requests**
+- **Memoization testing**
+- **PEP8 Compliance** using `pycodestyle`
+- **Parameterized tests** with `parameterized`
 
 ## 🧪 Running Tests
 
-### Prerequisites
+```bash
+$ python3 -m unittest discover
+```
 
-- Python 3.13
-- Ubuntu 18.04-compatible environment
-- `parameterized` library (install with pip)
-
-### Install Dependencies
+Or run a specific file:
 
 ```bash
-pip install parameterized
+$ python3 test_client.py
+```
+
+## ✅ Lint Check (PEP8)
+
+To check for style issues, run:
+
+```bash
+$ pycodestyle test_client.py
+```
+
+Fix issues like:
+- E501: line too long
+- W291: trailing whitespace
+- W293: blank line with whitespace
+
+## 🧰 Tools Used
+
+- `unittest`
+- `unittest.mock`
+- `parameterized`
+- `requests`
+- `pycodestyle`
+
+## 💾 Setup
+
+Install dependencies:
+
+```bash
+$ pip install requests parameterized pycodestyle
+```
+
+## 📝 Author
+
+Akindipe Muheez
