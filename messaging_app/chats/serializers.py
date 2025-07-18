@@ -1,6 +1,7 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import User, Conversation, Message
-
+from .models import Conversation, Message
+User = get_user_model()
 
 # === User Serializer (safe, excludes sensitive fields) ===
 class UserSerializer(serializers.ModelSerializer):
