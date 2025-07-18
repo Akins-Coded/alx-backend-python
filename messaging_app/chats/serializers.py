@@ -19,12 +19,13 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
     message_body = serializers.CharField()
     preview = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
         fields = [
             'message_id', 'conversation', 'sender',
-            'message_body', 'sent_at', 'is_read', 'preview'
+            'message_body', 'sent_at', 'is_read', 'preview', 'status'
         ]
 
     def get_preview(self, obj):
@@ -41,19 +42,30 @@ class MessageSerializer(serializers.ModelSerializer):
                 "Message is too long (max 1000 characters)."
                 )
         return value
+    def get_status(self, obj):
+        return "Read" if obj.is_read else "Unread"
 
 
 # === Conversation Serializer with nested messages and participants ===
 class ConversationSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
     messages = MessageSerializer(many=True, read_only=True, source='messages')
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
         fields = [
             'conversation_id', 'participants',
-            'created_at', 'messages'
+            'created_at', 'messages', 'status'
         ]
+    def get_messages(self, obj):
+        return MessageSerializer(obj.messages.all(), many=True).data
+
+    def get_status(self, obj):
+        # Example logic: show number of unread messages
+        user = self.context['request'].user
+        unread_count = obj.messages.filter(is_read=False, sender__isnull=False).exclude(sender=user).count()
+        return f"{unread_count} unread message(s)" if unread_count > 0 else "No unread messages"
 
 
 # === Message Serializer for CREATE (POST) operations ===

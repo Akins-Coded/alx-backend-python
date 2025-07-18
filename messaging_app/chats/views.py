@@ -31,6 +31,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
             return CreateConversationSerializer
         return ConversationSerializer
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
     def perform_create(self, serializer):
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
@@ -54,6 +57,9 @@ class MessageViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return CreateMessageSerializer
         return MessageSerializer
+        
+    def get_serializer_context(self):
+        return {'request': self.request}
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
