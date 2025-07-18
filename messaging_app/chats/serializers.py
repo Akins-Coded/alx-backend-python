@@ -16,13 +16,30 @@ class UserSerializer(serializers.ModelSerializer):
 # === Message Serializer for READ operations ===
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
+    message_body = serializers.CharField()
+    preview = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
         fields = [
             'message_id', 'conversation', 'sender',
-            'message_body', 'sent_at', 'is_read'
+            'message_body', 'sent_at', 'is_read', 'preview'
         ]
+
+    def get_preview(self, obj):
+        # Return the first 20 characters of the message
+        return obj.message_body[:20] + '...' if len(obj.message_body) > 20 else obj.message_body
+
+    def validate_message_body(self, value):
+        if not value.strip():
+            raise serializers.ValidationError(
+                "Message cannot be empty or whitespace."
+                )
+        if len(value) > 1000:
+            raise serializers.ValidationError(
+                "Message is too long (max 1000 characters)."
+                )
+        return value
 
 
 # === Conversation Serializer with nested messages and participants ===
