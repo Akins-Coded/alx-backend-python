@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "chats.apps.ChatsConfig",  # Custom app for chat functionality
     "rest_framework",  # Django REST framework for API support
     'corsheaders',  # CORS headers for cross-origin requests
+    'django_filters',  # Django filter for advanced query support
 ]
 
 MIDDLEWARE = [
@@ -145,6 +146,8 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,  #  Set the number of items per page
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    
 }
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 CORS_ALLOW_ALL_ORIGINS = True  # Or use CORS_ALLOWED_ORIGINS below
