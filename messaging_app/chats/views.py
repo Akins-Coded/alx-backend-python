@@ -57,7 +57,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return CreateMessageSerializer
         return MessageSerializer
-        
+
     def get_serializer_context(self):
         return {'request': self.request}
 
@@ -65,4 +65,13 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
-        return Message.objects.filter(conversation__participants=self.request.user)
+        queryset = Message.objects.filter(conversation__participants=self.request.user)
+
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            if status_param.lower() == 'read':
+                queryset = queryset.filter(is_read=True)
+            elif status_param.lower() == 'unread':
+                queryset = queryset.filter(is_read=False)
+
+        return queryset
