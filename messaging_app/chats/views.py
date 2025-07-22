@@ -2,12 +2,17 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsOwnerOfConversation, IsOwnerOfMessage
+
 from .models import Conversation, Message
 from .serializers import (
-    ConversationSerializer, CreateConversationSerializer,
-    MessageSerializer, CreateMessageSerializer, UserSerializer
+    ConversationSerializer,
+    CreateConversationSerializer,
+    MessageSerializer,
+    CreateMessageSerializer,
+    UserSerializer
 )
+from .permissions import IsOwnerOfConversation, IsOwnerOfMessage
+from .auth import get_user_conversations, get_user_messages
 
 User = get_user_model()
 
@@ -19,11 +24,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    queryset = Conversation.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerOfConversation]
-
     filter_backends = [DjangoFilterBackend]
-    filters = {
+    filterset_fields = {
         'participants__user_id': ['exact'],
     }
 
@@ -41,13 +44,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation.save()
 
     def get_queryset(self):
-        user = self.request.user
-        return Conversation.objects.filter(
-            sender=user) | Conversation.objects.filter(recipient=user)
+        return get_user_conversations(self.request.user)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerOfMessage]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
@@ -68,22 +68,5 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
-        user = self.request.user
-
-        # Filter messages where user is sender or recipient in the conversation
-        queryset = Message.objects.filter(
-            conversation__sender=user
-        ) | Message.objects.filter(
-            conversation__recipient=user
-        )
-
-        # Optional status filter
         status_param = self.request.query_params.get('status')
-        if status_param:
-            status_param = status_param.lower()
-            if status_param == 'read':
-                queryset = queryset.filter(is_read=True)
-            elif status_param == 'unread':
-                queryset = queryset.filter(is_read=False)
-
-        return queryset
+        return get_user_messages(self.request.user, status_param)
