@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-
+from .permissions import IsOwnerOfConversation, IsOwnerOfMessage
 from .models import Conversation, Message
 from .serializers import (
     ConversationSerializer, CreateConversationSerializer,
@@ -20,7 +20,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOfConversation]
+
     filter_backends = [DjangoFilterBackend]
     filters = {
         'participants__user_id': ['exact'],
@@ -40,12 +41,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation.save()
 
     def get_queryset(self):
-        return Conversation.objects.filter(participants=self.request.user)
+        user = self.request.user
+        return Conversation.objects.filter(
+            sender=user) | Conversation.objects.filter(recipient=user)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOfMessage]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         'conversation__conversation_id': ['exact'],
@@ -65,13 +68,22 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
-        queryset = Message.objects.filter(conversation__participants=self.request.user)
+        user = self.request.user
 
+        # Filter messages where user is sender or recipient in the conversation
+        queryset = Message.objects.filter(
+            conversation__sender=user
+        ) | Message.objects.filter(
+            conversation__recipient=user
+        )
+
+        # Optional status filter
         status_param = self.request.query_params.get('status')
         if status_param:
-            if status_param.lower() == 'read':
+            status_param = status_param.lower()
+            if status_param == 'read':
                 queryset = queryset.filter(is_read=True)
-            elif status_param.lower() == 'unread':
+            elif status_param == 'unread':
                 queryset = queryset.filter(is_read=False)
 
         return queryset
