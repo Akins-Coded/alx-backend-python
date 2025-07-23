@@ -4,6 +4,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from .pagination import MessagePagination
+from .filters import MessageFilter
 
 from .models import Conversation, Message
 from .serializers import (
@@ -84,12 +86,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        'conversation__conversation_id': ['exact'],
-        'sender__user_id': ['exact'],
-        'is_read': ['exact'],
-    }
-
+    filterset_class = MessageFilter
+    pagination_class = MessagePagination
+    
     def get_serializer_class(self):
         if self.action == 'create':
             return CreateMessageSerializer
