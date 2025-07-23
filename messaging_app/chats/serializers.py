@@ -73,10 +73,15 @@ class CreateMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = [
-            'conversation', 'sender', 'message_body'
+            'conversation', 'message_body'
         ]
-
-
+    def create(self, validated_data):
+        sender = self.context['request'].user
+       
+    # Remove sender if it's already in validated_data
+        validated_data.pop('sender', None)
+        
+        return Message.objects.create(sender=sender, **validated_data)
 # === Conversation Serializer for CREATE operations ===
 class CreateConversationSerializer(serializers.ModelSerializer):
     class Meta:

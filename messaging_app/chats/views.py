@@ -27,7 +27,7 @@ def get_user_messages(user, status=None):
     Optionally filter by read/unread status.
     """
     queryset = Message.objects.filter(
-        Q(conversation__sender=user) | Q(conversation__recipient=user)
+        Q(participants=user)
     )
 
     if status:
@@ -64,9 +64,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
-        conversation.save()
+        
 
-    
     def get_queryset(self):
         """
         Return all conversations where the user is either the sender or recipient.
@@ -98,7 +97,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         return {'request': self.request}
 
     def perform_create(self, serializer):
-        serializer.save(participants=self.request.user)
+        serializer.save(sender=self.request.user)
 
     def get_queryset(self):
         user = self.request.user

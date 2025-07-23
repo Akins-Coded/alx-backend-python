@@ -7,7 +7,7 @@ def get_user_conversations(user):
     Return conversations where the user is sender or recipient.
     """
     return Conversation.objects.filter(
-        Q(sender=user) | Q(recipient=user)
+        Q(participants=user) 
     )
 
 def user_can_access_conversation(user, conversation: Conversation) -> bool:
