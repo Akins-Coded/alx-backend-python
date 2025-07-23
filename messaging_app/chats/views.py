@@ -11,7 +11,7 @@ from .serializers import (
     CreateMessageSerializer,
     UserSerializer
 )
-from .permissions import IsOwnerOfConversation, IsOwnerOfMessage
+from .permissions import IsParticipantOfConversation
 from .auth import get_user_conversations, get_user_messages
 
 User = get_user_model()
@@ -24,7 +24,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsOwnerOfConversation]
+    permission_classes = [IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         'participants__user_id': ['exact'],
@@ -48,7 +48,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, IsOwnerOfMessage]
+    permission_classes = [IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         'conversation__conversation_id': ['exact'],
