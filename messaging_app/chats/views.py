@@ -75,7 +75,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         queryset = Conversation.objects.filter(
-            Q(sender=user) | Q(recipient=user)
+            Q(participants=user)
         )
 
         if not queryset.exists():
@@ -98,7 +98,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         return {'request': self.request}
 
     def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)
+        serializer.save(participants=self.request.user)
 
     def get_queryset(self):
         user = self.request.user

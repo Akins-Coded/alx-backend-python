@@ -128,11 +128,14 @@ REST_FRAMEWORK = {
 
 # SimpleJWT Configuration
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=150000),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    
+    "USER_ID_FIELD": "user_id",  # match your model field
+    "USER_ID_CLAIM": "user_id",  # for token payload
 }
 
 # CORS configuration
