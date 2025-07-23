@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from rest_framework.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -63,9 +64,22 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation.participants.add(self.request.user)
         conversation.save()
 
+    
     def get_queryset(self):
-        return get_user_conversations(self.request.user)
+        """
+        Return all conversations where the user is either the sender or recipient.
+        Raise 403 if the user is not part of any conversation.
+        """
+        user = self.request.user
 
+        queryset = Conversation.objects.filter(
+            Q(sender=user) | Q(recipient=user)
+        )
+
+        if not queryset.exists():
+            raise PermissionDenied("HTTP_403_FORBIDDEN: You are not authorized to view any messages.")
+
+        return queryset
 
 class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsParticipantOfConversation]
@@ -88,5 +102,11 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
+        user = self.request.user
         status_param = self.request.query_params.get('status')
-        return get_user_messages(self.request.user, status_param)
+        queryset = get_user_messages(user, status_param)
+
+        if not queryset.exists():
+            raise PermissionDenied("HTTP_403_FORBIDDEN: You are not authorized to view any messages.")
+
+        return queryset
