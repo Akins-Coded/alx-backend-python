@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,9 +13,28 @@ from .serializers import (
     UserSerializer
 )
 from .permissions import IsParticipantOfConversation
-from .auth import get_user_conversations, get_user_messages
+from .auth import get_user_conversations
 
 User = get_user_model()
+
+
+def get_user_messages(user, status=None):
+    """
+    Return messages where the user is either the sender or recipient in the conversation.
+    Optionally filter by read/unread status.
+    """
+    queryset = Message.objects.filter(
+        Q(conversation__sender=user) | Q(conversation__recipient=user)
+    )
+
+    if status:
+        status = status.lower()
+        if status == 'read':
+            queryset = queryset.filter(is_read=True)
+        elif status == 'unread':
+            queryset = queryset.filter(is_read=False)
+
+    return queryset
 
 
 class UserViewSet(viewsets.ModelViewSet):

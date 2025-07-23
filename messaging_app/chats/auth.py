@@ -10,27 +10,6 @@ def get_user_conversations(user):
         Q(sender=user) | Q(recipient=user)
     )
 
-
-def get_user_messages(user, status=None):
-    """
-    Return messages where the user is either the sender or recipient in the conversation.
-    Optionally filter by read/unread status.
-    """
-    queryset = Message.objects.filter(
-        Q(conversation__sender=user) | Q(conversation__recipient=user)
-    )
-
-    if status:
-        status = status.lower()
-        if status == 'read':
-            queryset = queryset.filter(is_read=True)
-        elif status == 'unread':
-            queryset = queryset.filter(is_read=False)
-
-    return queryset
-
-
-
 def user_can_access_conversation(user, conversation: Conversation) -> bool:
     """
     Check if the user is the sender or recipient of the conversation.
