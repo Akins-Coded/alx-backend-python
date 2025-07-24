@@ -1,0 +1,166 @@
+{
+    "info": {
+        "name": "Messaging App API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Login - Get Token",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/token/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1:8000"
+                    ],
+                    "path": [
+                        "api",
+                        "token"
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"username\": \"your_username\",\n    \"password\": \"your_password\"\n}"
+                }
+            }
+        },
+        {
+            "name": "Get Users",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer <ACCESS_TOKEN>"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/users/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1:8000"
+                    ],
+                    "path": [
+                        "api",
+                        "users"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Create Conversation",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer <ACCESS_TOKEN>"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/conversations/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1:8000"
+                    ],
+                    "path": [
+                        "api",
+                        "conversations"
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"recipient_id\": 2\n}"
+                }
+            }
+        },
+        {
+            "name": "Get Conversations",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer <ACCESS_TOKEN>"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/conversations/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1:8000"
+                    ],
+                    "path": [
+                        "api",
+                        "conversations"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Send Message",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer <ACCESS_TOKEN>"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/messages/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1:8000"
+                    ],
+                    "path": [
+                        "api",
+                        "messages"
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"conversation\": \"your-conversation-uuid\",\n    \"message_body\": \"Hello from Postman!\"\n}"
+                }
+            }
+        },
+        {
+            "name": "Get Messages",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer <ACCESS_TOKEN>"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/messages/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1:8000"
+                    ],
+                    "path": [
+                        "api",
+                        "messages"
+                    ]
+                }
+            }
+        }
+    ]
+}
