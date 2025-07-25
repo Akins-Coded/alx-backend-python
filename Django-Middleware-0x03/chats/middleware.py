@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import HttpResponse
 
 
@@ -38,3 +38,41 @@ class RestrictAccessByTimeMiddleware:
             return HttpResponse("⛔ Access restricted. You can only access this app between 6PM and 9PM.", status=403)
 
         return self.get_response(request)
+class OffensiveLanguageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.message_tracker = defaultdict(deque) # Tracks Timesamps
+
+        self.time_window = 60 # 60 seconds = 1 minuite
+        self.max_messsages = 5 # Maximum messages allowed in the time window
+    
+    def __call__(self, request):
+         # Only track POST requests (assumed to be sending messages)
+        if request.method == 'POST' and request.path.startswith('/api/messages/'):
+            ip = self.get_client_ip(request)
+            now = time.time()
+
+            # Remove timestamps older than 60 seconds
+            timestamps = self.message_tracker[ip]
+            while timestamps and now - timestamps[0] > self.time_window:
+                timestamps.popleft()
+
+            # Check if current count exceeds limit
+            if len(timestamps) >= self.max_messages:
+                return JsonResponse({
+                    "error": "⛔ You are Being Rude and Offensive. Please wait before sending more messages."
+                }, status=429)
+
+            # Record current message timestamp
+            timestamps.append(now)
+
+        return self.get_response(request)
+
+    def get_client_ip(self, request):
+        """Extracts the client IP address from the request headers."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
