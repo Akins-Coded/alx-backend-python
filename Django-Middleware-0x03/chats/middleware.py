@@ -76,3 +76,17 @@ class OffensiveLanguageMiddleware:
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+    
+class RolepermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        user = request.user
+
+        if user.is_authenticated:
+            allowed_roles = ['admin', 'moderator']
+            if not hasattr(user, 'role') or user.role not in allowed_roles:
+                return HttpResponse("⛔ You do not have permission to access this Page.", status=403)
+            
+        return self.get_response(request)
