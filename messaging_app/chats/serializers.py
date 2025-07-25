@@ -49,7 +49,7 @@ class MessageSerializer(serializers.ModelSerializer):
 # === Conversation Serializer with nested messages and participants ===
 class ConversationSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
-    messages = MessageSerializer(many=True, read_only=True, source='messages')
+    messages = MessageSerializer(many=True, read_only=True)
     status = serializers.SerializerMethodField()
 
     class Meta:

@@ -15,7 +15,7 @@ from .serializers import (
     CreateMessageSerializer,
     UserSerializer
 )
-from .permissions import IsParticipantOfConversation
+from .permissions import IsParticipantOfConversation, IsAdminOrStaff
 from .auth import get_user_conversations
 
 User = get_user_model()
@@ -26,25 +26,25 @@ def get_user_messages(user, status=None):
     Return messages where the user is either the sender or recipient in the conversation.
     Optionally filter by read/unread status.
     """
-    queryset = Message.objects.filter(
-        Q(participants=user)
-    )
-
-    if status:
-        status = status.lower()
-        if status == 'read':
-            queryset = queryset.filter(is_read=True)
-        elif status == 'unread':
-            queryset = queryset.filter(is_read=False)
-
+    
+    queryset = Message.objects.filter(conversation__participants=user)  # ✅ valid join
+    if status == "read":
+        queryset = queryset.filter(is_read=True)
+    elif status == "unread":
+        queryset = queryset.filter(is_read=False)
     return queryset
+
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        if self.action == 'list':
+            return [IsAdminOrStaff()]
+        return [IsAuthenticated()]
 
 class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsParticipantOfConversation]

@@ -16,7 +16,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=128)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=150)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number = models.CharField(max_length=30, blank=True, null=True)
 
     class Roles(models.TextChoices):
         ADMIN = 'ADMIN', 'Admin'
