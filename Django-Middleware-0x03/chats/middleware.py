@@ -7,7 +7,7 @@ class RequestLoggingMiddleware:
 
         # Configure logger
         self.logger = logging.getLogger("request_logger")
-        handler = logging.FileHandler("user_requests.log")
+        handler = logging.FileHandler("requests.log")
         formatter = logging.Formatter('%(message)s')
         handler.setFormatter(formatter)
 
