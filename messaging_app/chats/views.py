@@ -99,12 +99,29 @@ class MessageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
 
+
     def get_queryset(self):
         user = self.request.user
         status_param = self.request.query_params.get('status')
-        queryset = get_user_messages(user, status_param)
+        conversation_id = self.request.query_params.get('conversation_id')
 
-        if not queryset.exists():
+        # Must filter by conversation_id
+        if not conversation_id:
+            raise PermissionDenied("conversation_id query parameter is required.")
+
+        try:
+            conversation = Conversation.objects.get(conversation_id=conversation_id)
+        except Conversation.DoesNotExist:
+            raise PermissionDenied("Conversation does not exist.")
+
+        if not conversation.participants.filter(user_id=user.user_id).exists():
             raise PermissionDenied("HTTP_403_FORBIDDEN: You are not authorized to view any messages.")
+
+        queryset = Message.objects.filter(conversation=conversation)
+
+        if status_param == "read":
+            queryset = queryset.filter(is_read=True)
+        elif status_param == "unread":
+            queryset = queryset.filter(is_read=False)
 
         return queryset
