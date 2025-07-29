@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 from django.http import HttpResponse
+from collections import defaultdict, deque
+
 
 
 class RequestLoggingMiddleware:
