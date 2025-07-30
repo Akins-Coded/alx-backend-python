@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['user_id', 'username', 'email', 'first_name', 'last_name']
 
 
+
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
     receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
@@ -22,8 +23,9 @@ class MessageSerializer(serializers.ModelSerializer):
             'id', 'sender', 'receiver', 'content', 'timestamp',
             'is_read', 'edited', 'edited_by'
         ]
-        read_only_fields = ['id', 'timestamp', 'edited', 'edited_by', 'is_read']
-
+        
+    def get_replies(self, obj):
+        return MessageSerializer(obj.replies.all(), many=True).data
 
 class NotificationSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
