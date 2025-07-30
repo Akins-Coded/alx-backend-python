@@ -16,9 +16,6 @@ def build_threaded_message(message): # Helper function to build threaded message
     }
 
    
-from rest_framework.decorators import action
-from rest_framework.response import Response
-
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
