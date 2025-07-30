@@ -109,6 +109,15 @@ USE_TZ = True
 # Static files
 STATIC_URL = "static/"
 
+# settings.py
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 
 # Django REST Framework
 REST_FRAMEWORK = {

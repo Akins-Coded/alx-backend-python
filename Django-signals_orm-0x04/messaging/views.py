@@ -2,6 +2,8 @@ from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Message, Notification, MessageHistory, UnreadMessagesManager
 from .serializers import MessageSerializer, NotificationSerializer, MessageHistorySerializer
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +18,14 @@ def build_threaded_message(message): # Helper function to build threaded message
         "replies": [build_threaded_message(reply) for reply in message.replies.all()]
     }
 
+class ConversationMessagesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @method_decorator(cache_page(60))  # ⏱ cache for 60 seconds
+    def get(self, request, conversation_id):
+        messages = Message.objects.filter(conversation_id=conversation_id)
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
    
 class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
@@ -28,6 +38,10 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Message.objects.filter(sender=user) \
             .select_related('sender', 'receiver', 'edited_by', 'parent_message') \
             .prefetch_related('replies')
+
+    @method_decorator(cache_page(60))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user) # sender=request.user
