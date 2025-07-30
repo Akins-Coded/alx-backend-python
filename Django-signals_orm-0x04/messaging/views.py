@@ -49,7 +49,7 @@ class UnreadMessagesView(APIView):
 
     def get(self, request):
         user = request.user
-        unread_messages = Message.unread.for_user(user)
+        unread_messages = Message.unread.unread_for_user(user)
         serializer = MessageSerializer(unread_messages, many=True)
         return Response(serializer.data)
 
