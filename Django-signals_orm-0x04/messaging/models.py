@@ -4,7 +4,14 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Create your models here.
+# Create your models here
+class UnreadMessagesManager(models.Manager):
+    def for_user(self, user):
+        return self.get_queryset().filter(receiver=user, is_read=False) \
+                   .select_related('sender') \
+                   .only('id', 'content', 'timestamp', 'sender__username')
+                   # Use .only() to load only necessary fields
+
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name='messaging_sent_messages', on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
@@ -20,6 +27,11 @@ class Message(models.Model):
         related_name='replies',
         on_delete=models.CASCADE
     )
+    objects = models.Manager()  # Default manager
+    unread = UnreadMessagesManager()  # Custom manager for unread messages  
+    class Meta:
+        ordering = ['-timestamp']  # Order messages by timestamp, newest first
+        verbose_name_plural = 'Messages'
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver} at {self.timestamp}"
     

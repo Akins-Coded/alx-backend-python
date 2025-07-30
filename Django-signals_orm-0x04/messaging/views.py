@@ -1,9 +1,10 @@
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Message, Notification, MessageHistory
+from .models import Message, Notification, MessageHistory, UnreadMessagesManager
 from .serializers import MessageSerializer, NotificationSerializer, MessageHistorySerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 def build_threaded_message(message): # Helper function to build threaded message structure
         return {
@@ -42,6 +43,15 @@ class MessageViewSet(viewsets.ModelViewSet):
         message = self.get_object()
         threaded = build_threaded_message(message)
         return Response(threaded)
+
+class UnreadMessagesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        unread_messages = Message.unread.for_user(user)
+        serializer = MessageSerializer(unread_messages, many=True)
+        return Response(serializer.data)
 
 class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.all().order_by('-timestamp')
