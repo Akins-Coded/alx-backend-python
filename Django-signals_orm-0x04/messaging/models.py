@@ -1,16 +1,10 @@
 import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from .managers import UnreadMessagesManager
 User = get_user_model()
 
 # Create your models here
-class UnreadMessagesManager(models.Manager):
-    def for_user(self, user):
-        return self.get_queryset().filter(receiver=user, is_read=False) \
-                   .select_related('sender') \
-                   .only('id', 'content', 'timestamp', 'sender__username')
-                   # Use .only() to load only necessary fields
 
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name='messaging_sent_messages', on_delete=models.CASCADE)
@@ -32,6 +26,8 @@ class Message(models.Model):
     class Meta:
         ordering = ['-timestamp']  # Order messages by timestamp, newest first
         verbose_name_plural = 'Messages'
+        verbose_name = 'Message'
+
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver} at {self.timestamp}"
     
