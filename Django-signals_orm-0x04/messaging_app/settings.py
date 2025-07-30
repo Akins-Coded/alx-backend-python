@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
 
     # Local apps
-    "chats.apps.ChatsConfig",
     "messaging.apps.MessagingConfig",
 ]
 
@@ -58,11 +57,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 
     # custom middlewares 
-    'chats.middleware.RequestLoggingMiddleware', # log requests
-    'chats.middleware.RestrictAccessByTimeMiddleware', # restrict access to specific times
-    'chats.middleware.OffensiveLanguageMiddleware', # detect offensive language
-    'chats.middleware.RolepermissionMiddleware', # check user roles
-
+   
 ]
 
 ROOT_URLCONF = "messaging_app.urls"
@@ -114,8 +109,6 @@ USE_TZ = True
 # Static files
 STATIC_URL = "static/"
 
-# Custom user model
-AUTH_USER_MODEL = 'chats.User'
 
 # Django REST Framework
 REST_FRAMEWORK = {
