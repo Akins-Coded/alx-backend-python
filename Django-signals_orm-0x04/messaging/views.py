@@ -29,7 +29,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             .prefetch_related('replies')
 
     def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)
+        serializer.save(sender=self.request.user) # sender=request.user
 
     def perform_update(self, serializer):
         instance = serializer.save()
