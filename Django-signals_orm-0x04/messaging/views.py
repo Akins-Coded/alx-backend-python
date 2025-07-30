@@ -16,13 +16,20 @@ def build_threaded_message(message): # Helper function to build threaded message
     }
 
    
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all().select_related('sender', 'receiver', 'edited_by', 'parent_message')\
-                                     .prefetch_related('replies')
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['sender', 'receiver', 'is_read', 'edited']
+
+    def get_queryset(self):
+        user = self.request.user
+        return Message.objects.filter(sender=user) \
+            .select_related('sender', 'receiver', 'edited_by', 'parent_message') \
+            .prefetch_related('replies')
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
