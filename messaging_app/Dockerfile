@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt /app/
+
+COPY .env /app/.env
+
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
