@@ -26,7 +26,7 @@ RUN pip install -r requirements.txt
 # Copy project files
 COPY . /app/
 
-# Expose port 8000
+# Expose port 8000 -p
 EXPOSE 8000
 
 # Start the server
