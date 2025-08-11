@@ -1,7 +1,8 @@
 import environ
 import os
-from pathlib import Path
+# from pathlib import Path
 from datetime import timedelta
+# from django.db.utils import OperationalError
 
 # Initialize environment variables
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -65,7 +66,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "messaging_app.wsgi.application"
 
 # ✅ Database section with fallback
-from django.db.utils import OperationalError
+
 
 try:
     DATABASES = {
