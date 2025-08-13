@@ -46,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class ConversationViewSet(viewsets.ModelViewSet):
+class ConversationViewSet(viewsets.ModelViewSet): # conversation_id
     permission_classes = [IsParticipantOfConversation]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
