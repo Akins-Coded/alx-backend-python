@@ -1,0 +1,77 @@
+#!/bin/bash
+# kubctl-0x03 — Rolling update to image :2.0 with downtime check
+
+set -euo pipefail
+
+DEPLOYMENT="messaging-app-blue"
+SERVICE="messaging-app-service"
+NAMESPACE="default"
+LOCAL_PORT=8080
+SERVICE_PORT=80
+CURL_URL="http://127.0.0.1:${LOCAL_PORT}/"
+CURL_LOG="$(mktemp)"
+PF_LOG="$(mktemp)"
+MONITOR_PID=""
+PF_PID=""
+
+cleanup() {
+  set +e
+  [[ -n "${MONITOR_PID}" ]] && kill "${MONITOR_PID}" 2>/dev/null || true
+  [[ -n "${PF_PID}" ]] && kill "${PF_PID}" 2>/dev/null || true
+  rm -f "${CURL_LOG}" "${PF_LOG}" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+echo "▶ Applying updated deployment (triggers rolling update)…"
+kubectl apply -n "${NAMESPACE}" -f blue_deployment.yaml
+
+echo "▶ Ensuring port-forward to ${SERVICE} is up (for curl checks)…"
+kubectl port-forward -n "${NAMESPACE}" "svc/${SERVICE}" "${LOCAL_PORT}:${SERVICE_PORT}" >"${PF_LOG}" 2>&1 &
+PF_PID=$!
+
+# Wait until port-forward is ready
+for i in {1..30}; do
+  if curl -sSf "${CURL_URL}" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+
+echo "▶ Starting continuous request monitor during rollout… (logging to ${CURL_LOG})"
+(
+  # One request/second; log timestamp + HTTP code
+  while true; do
+    TS="$(date +%T)"
+    CODE="$(curl -s -o /dev/null -w "%{http_code}" "${CURL_URL}" || echo "000")"
+    echo "${TS} ${CODE}" >> "${CURL_LOG}"
+    sleep 1
+  done
+) &
+MONITOR_PID=$!
+
+echo "▶ Waiting for rollout to complete…"
+kubectl rollout status -n "${NAMESPACE}" "deployment/${DEPLOYMENT}" --timeout=5m
+
+echo "▶ Rollout finished. Stopping monitor and port-forward…"
+kill "${MONITOR_PID}" 2>/dev/null || true
+kill "${PF_PID}" 2>/dev/null || true
+MONITOR_PID=""
+PF_PID=""
+sleep 1
+
+echo "▶ Downtime check summary:"
+TOTAL=$(wc -l < "${CURL_LOG}" | tr -d ' ')
+FAILS=$(grep -E -v ' 200$' "${CURL_LOG}" | wc -l | tr -d ' ' || true)
+echo "  Total probe requests: ${TOTAL}"
+echo "  Non-200 responses:    ${FAILS}"
+echo "  Sample (last 10):"
+tail -n 10 "${CURL_LOG}" || true
+
+echo "▶ Current pods (should all be new image):"
+kubectl get pods -n "${NAMESPACE}" -l app=messaging-app -o wide
+
+echo "▶ Current image on deployment:"
+kubectl get deploy "${DEPLOYMENT}" -n "${NAMESPACE}" -o jsonpath='{range .spec.template.spec.containers[*]}{.name} -> {.image}{"\n"}{end}'
+echo
+
+echo "✅ Rolling update procedure complete."

@@ -7,6 +7,11 @@ metadata:
     version: blue
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0     # never take existing pods down before new ones are ready
+      maxSurge: 1           # add one extra pod during rollout
   selector:
     matchLabels:
       app: messaging-app
@@ -18,7 +23,24 @@ spec:
         version: blue
     spec:
       containers:
-      - name: messaging-app
-        image: your-dockerhub-username/messaging_app:blue
-        ports:
-        - containerPort: 8000
+        - name: messaging-app
+          image: your-dockerhub-username/messaging_app:2.0   # <- UPDATED
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
