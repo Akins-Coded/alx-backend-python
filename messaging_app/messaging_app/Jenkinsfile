@@ -34,6 +34,7 @@ pipeline {
                 sh '''
                     . $VENV/bin/activate
                     pip install --upgrade pip
+                    cd messaging_app
                     pip install -r requirements.txt
                 '''
             }
@@ -43,6 +44,7 @@ pipeline {
             steps {
                 sh '''
                     . $VENV/bin/activate
+                    cd messaging_app
                     mkdir -p reports/junit
                     pytest -q --maxfail=1 --disable-warnings --junitxml=reports/junit/pytest.xml
                 '''
