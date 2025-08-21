@@ -43,6 +43,8 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
+                    apt-get update
+                    apt-get install -y python3-dev default-libmysqlclient-dev build-essential pkg-config
                     . $VENV/bin/activate
                     cd messaging_app
                     mkdir -p reports/junit
