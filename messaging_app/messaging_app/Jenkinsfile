@@ -19,6 +19,15 @@ pipeline {
             }
         }
 
+        stage('Install system dependencies') {
+            steps {
+                sh '''
+                    apt-get update
+                    apt-get install -y --no-install-recommends python3-dev default-libmysqlclient-dev build-essential pkg-config
+                '''
+            }
+        }
+
         stage('Set up Python venv') {
             steps {
                 sh '''
@@ -43,8 +52,6 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
-                    apt-get update
-                    apt-get install -y python3-dev default-libmysqlclient-dev build-essential pkg-config
                     . $VENV/bin/activate
                     cd messaging_app
                     mkdir -p reports/junit
@@ -56,8 +63,8 @@ pipeline {
 
     post {
         always {
-            junit 'reports/junit/*.xml'
-            archiveArtifacts artifacts: 'reports/**/*', fingerprint: true
+            junit 'messaging_app/reports/junit/*.xml'
+            archiveArtifacts artifacts: 'messaging_app/reports/**/*', fingerprint: true
             sh 'rm -rf .venv || true'
         }
     }
