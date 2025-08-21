@@ -35,9 +35,7 @@ pipeline {
                     . $VENV/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
-                    python -c "import pytest" 2>/dev/null || pip install pytest
-                    python -c "import coverage" 2>/dev/null || pip install coverage pytest-cov
-                '''
+                    
             }
         }
 
