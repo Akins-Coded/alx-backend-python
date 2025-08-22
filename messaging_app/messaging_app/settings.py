@@ -2,12 +2,22 @@ import environ
 import os
 # from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
 # from django.db.utils import OperationalError
 
 # Initialize environment variables
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-env = environ.Env(DEBUG=(bool, False))
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Initialise environment variables
+env = environ.Env(
+    DATABASE_URL=(str, ''),
+    SQLITE_PATH=(str, os.path.join(BASE_DIR, 'db.sqlite3'))
+)
+
+
+# Read .env file
+environ.Env.read_env()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
@@ -66,21 +76,19 @@ TEMPLATES = [
 WSGI_APPLICATION = "messaging_app.wsgi.application"
 
 # ✅ Database section with fallback
-
-
-try:
+if env('DATABASE_URL'):
     DATABASES = {
-        'default': env.db('DATABASE_URL')  # MySQL primary
+        'default': env.db('DATABASE_URL')
+    }
+else:
+    print("⚠️ No DATABASE_URL found, falling back to SQLite.")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': env('SQLITE_PATH'),
+        }
     }
 
-    from django.db import connections
-    connections['default'].cursor()
-
-except Exception as e:
-    print("⚠️ MySQL connection failed, switching to SQLite fallback.")
-    DATABASES = {
-        'default': env.db('FALLBACK_DATABASE_URL')  # SQLite fallback
-    }
 
 
 # Password validation
