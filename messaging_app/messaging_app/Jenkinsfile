@@ -14,6 +14,17 @@ pipeline {
             }
         }
 
+        stage('Prepare environment') {
+            steps {
+                withCredentials([file(credentialsId: 'django-env-file', variable: 'ENV_FILE')]) {
+                    sh '''
+                        cp $ENV_FILE .env
+                        echo "✅ .env file copied from Jenkins credentials"
+                    '''
+                }
+            }
+        }
+
         stage('Install dependencies') {
             steps {
                 sh '''
@@ -21,6 +32,15 @@ pipeline {
                     . $VENV/bin/activate
                     pip install --upgrade pip
                     pip install -r messaging_app/requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Django checks') {
+            steps {
+                sh '''
+                    . $VENV/bin/activate
+                    python manage.py check
                 '''
             }
         }
