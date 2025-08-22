@@ -18,6 +18,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'django-env-file', variable: 'ENV_FILE')]) {
                     sh '''
+                         chmod +w .
                         cp $ENV_FILE .env
                         echo "✅ .env file copied from Jenkins credentials"
                     '''
