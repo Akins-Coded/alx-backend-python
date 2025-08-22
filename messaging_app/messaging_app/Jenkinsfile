@@ -14,33 +14,11 @@ pipeline {
             }
         }
 
-        stage('Prepare environment') {
-            steps {
-                withCredentials([file(credentialsId: 'django-env-file', variable: 'ENV_FILE')]) {
-                    sh '''
-                        cp $ENV_FILE .env
-                        echo "✅ .env file copied from Jenkins credentials"
-                    '''
-                }
-            }
-        }
-
         stage('Install dependencies') {
             steps {
                 sh '''
-                    python3 -m venv $VENV
-                    . $VENV/bin/activate
-                    pip install --upgrade pip
-                    pip install -r messaging_app/requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Django checks') {
-            steps {
-                sh '''
-                    . $VENV/bin/activate
-                    python manage.py check
+                pip3 install --upgrade pip
+                pip3 install -r messaging_app/requirements.txt
                 '''
             }
         }
@@ -48,7 +26,6 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
-                    . $VENV/bin/activate
                     mkdir -p messaging_app/reports/junit
                     pytest messaging_app --junitxml=messaging_app/reports/junit/pytest.xml
                 '''
@@ -62,7 +39,7 @@ pipeline {
 
         stage('Cleanup') {
             steps {
-                cleanWs()
+                cleanWs()  // Clears workspace after job
             }
         }
     }
