@@ -89,7 +89,11 @@ def test_message_creation_and_filters(api_client, create_user):
     response = api_client.get(url)
     assert response.status_code == 403
 
-    # Create a message
+    
+        # Create a message
     response = api_client.post(
         url + f"?conversation_id={conversation.conversation_id}",
-        {"message_bod_
+        {"message_body": "Hello Bob!"},
+        format="json",
+    )
+    assert response.status_code == 201
