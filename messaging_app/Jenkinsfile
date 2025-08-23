@@ -67,6 +67,17 @@ pipeline {
             }
         }
 
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        def app = docker.build("akinscoded/messaging_app:latest")
+                        app.push()
+                    }
+                }
+            }
+        }
+
         stage('Cleanup') {
             steps {
                 cleanWs()
