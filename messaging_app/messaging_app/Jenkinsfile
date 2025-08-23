@@ -14,11 +14,35 @@ pipeline {
             }
         }
 
+        stage('Prepare environment') {
+            steps {
+                withCredentials([file(credentialsId: 'django-env-file', variable: 'ENV_FILE')]) {
+                    sh '''
+                        mkdir -p messaging_app
+                        cp $ENV_FILE messaging_app/.env
+                        echo "✅ .env file copied into messaging_app/.env"
+                    '''
+                }
+            }
+        }
+
         stage('Install dependencies') {
             steps {
                 sh '''
-                pip3 install --upgrade pip
-                pip3 install -r messaging_app/requirements.txt
+                    python3 -m venv $VENV
+                    . $VENV/bin/activate
+                    pip3 install --upgrade pip
+                    pip3 install -r messaging_app/requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Django checks') {
+            steps {
+                sh '''
+                    . $VENV/bin/activate
+                    cd messaging_app
+                    python manage.py check
                 '''
             }
         }
@@ -26,8 +50,14 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
-                    mkdir -p messaging_app/reports/junit
-                    pytest messaging_app --junitxml=messaging_app/reports/junit/pytest.xml
+                    . $VENV/bin/activate
+                    cd messaging_app
+                    rm -f test_db.sqlite3   # ensure fresh DB
+                    export DATABASE_URL=''  # force SQLite fallback
+                    mkdir -p reports/junit
+                    pytest --ds=messaging_app.settings \
+                           --junitxml=reports/junit/pytest.xml \
+                           --maxfail=1 --disable-warnings -q
                 '''
             }
             post {
@@ -37,28 +67,20 @@ pipeline {
             }
         }
 
-
-      stage('Build Docker Image') {
+        stage('Build & Push Docker Image') {
             steps {
-                sh 'docker build -t akinscoded/messaging_app:latest messaging_app'
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push akinscoded/messaging_app:latest'
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                        def app = docker.build("akinscoded/messaging_app:latest")
+                        app.push()
+                    }
                 }
             }
         }
-    }
-}
-// Coded-Somethig
 
         stage('Cleanup') {
             steps {
-                cleanWs()  // Clears workspace after job
+                cleanWs()
             }
         }
     }
