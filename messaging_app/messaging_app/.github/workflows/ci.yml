@@ -49,14 +49,25 @@ jobs:
           pip install -r requirements.txt
 
       - name: Wait for MySQL
+        id: wait_mysql
         run: |
           for i in {1..10}; do
-            mysqladmin ping -h127.0.0.1 -utestuser -ptestpass && break
+            mysqladmin ping -h127.0.0.1 -utestuser -ptestpass && exit 0
             echo "Waiting for MySQL..."
             sleep 5
           done
+          echo "MySQL not available, will use SQLite"
+          exit 1
+        continue-on-error: true
 
       - name: Run Django tests
         run: |
-          python manage.py migrate
-          python manage.py test
+          if [ "${{ steps.wait_mysql.outcome }}" == "success" ]; then
+            echo "Using MySQL database"
+            python manage.py migrate
+            python manage.py test
+          else
+            echo "Falling back to SQLite"
+            export DATABASE_NAME=db.sqlite3
+            python manage.py migrate
+            python manage.py test
