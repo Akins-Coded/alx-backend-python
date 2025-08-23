@@ -16,7 +16,7 @@ pipeline {
             steps {
                 sh '''
                     echo "🚀 Building Docker image..."
-                    docker build -t ${DOCKER_HUB_REPO}:${BUILD_NUMBER} .
+                    docker build -t ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ./messaging_app
                 '''
             }
         }

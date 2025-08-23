@@ -27,7 +27,7 @@ RUN pip install -r requirements.txt
 # Copy project files
 COPY . /app/
 
-# Expose port 8000 -p
-EXPOSE 8000
+# Expose port 9000
+EXPOSE 9000
 # Start the server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:9000"]
