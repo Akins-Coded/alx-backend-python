@@ -50,9 +50,12 @@ pipeline {
         stage('Run tests') {
             steps {
                 sh '''
-                    . $VENV/bin/activate
-                    mkdir -p messaging_app/reports/junit
-                    pytest messaging_app --junitxml=messaging_app/reports/junit/pytest.xml
+                     . $VENV/bin/activate
+                    cd messaging_app
+                    rm -f test_db.sqlite3  # ensure fresh db
+                    export DATABASE_URL=sqlite:///test_db.sqlite3  # explicit SQLite
+                    mkdir -p reports/junit
+                    pytest --ds=messaging_app.settings --junitxml=reports/junit/pytest.xml
                 '''
             }
             post {
@@ -61,19 +64,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Test') {
-            steps {
-                sh '''
-                    . $VENV/bin/activate
-                    cd messaging_app
-                    rm -f test_db.sqlite3  # ensure a fresh db
-                    export DATABASE_URL=''  # force Django to use SQLite fallback
-                    pytest --ds=messaging_app.settings --maxfail=1 --disable-warnings -q
-                '''
-            }
-        }
-
 
         stage('Cleanup') {
             steps {
