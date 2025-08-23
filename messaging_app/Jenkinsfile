@@ -68,10 +68,12 @@ pipeline {
                     . $VENV/bin/activate
                     cd messaging_app
                     rm -f test_db.sqlite3  # ensure a fresh db
+                    export DATABASE_URL=''  # force Django to use SQLite fallback
                     pytest --ds=messaging_app.settings --maxfail=1 --disable-warnings -q
                 '''
             }
         }
+
 
         stage('Cleanup') {
             steps {
