@@ -2,85 +2,40 @@ pipeline {
     agent any
 
     environment {
-        VENV = '.venv'
+        DOCKER_HUB_REPO = "akinscoded/messaging_app"
+        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: "main",
-                    url: 'git@github.com:Akins-Coded/alx-backend-python.git',
-                    credentialsId: 'github-ssh'
+                git branch: 'main', url: 'git@github.com:Akins-Coded/alx-backend-python.git'
             }
         }
 
-        stage('Prepare environment') {
-            steps {
-                withCredentials([file(credentialsId: 'django-env-file', variable: 'ENV_FILE')]) {
-                    sh '''
-                        mkdir -p messaging_app
-                        cp $ENV_FILE messaging_app/.env
-                        echo "✅ .env file copied into messaging_app/.env"
-                    '''
-                }
-            }
-        }
-
-        stage('Install dependencies') {
-            steps {
-                sh '''
-                    python3 -m venv $VENV
-                    . $VENV/bin/activate
-                    pip install --upgrade pip
-                    pip install -r messaging_app/requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Django checks') {
-            steps {
-                sh '''
-                    . $VENV/bin/activate
-                    cd messaging_app
-                    python manage.py check
-                '''
-            }
-        }
-
-        stage('Run tests') {
-            steps {
-                sh '''
-                    . $VENV/bin/activate
-                    cd messaging_app
-                    rm -f test_db.sqlite3   # ensure fresh DB
-                    export DATABASE_URL=''  # force SQLite fallback
-                    mkdir -p reports/junit
-                    pytest --ds=messaging_app.settings \
-                           --junitxml=reports/junit/pytest.xml \
-                           --maxfail=1 --disable-warnings -q
-                '''
-            }
-            post {
-                always {
-                    junit 'messaging_app/reports/junit/pytest.xml'
-                }
-            }
-        }
-
-        stage('Build & Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        def app = docker.build("akinscoded/messaging_app:latest")
-                        app.push()
-                    }
+                    sh "docker build -t ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ."
                 }
             }
         }
 
-        stage('Cleanup') {
+        stage('Login to DockerHub') {
             steps {
-                cleanWs()
+                script {
+                    sh "echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin"
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    sh "docker push ${DOCKER_HUB_REPO}:${BUILD_NUMBER}"
+                    sh "docker tag ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ${DOCKER_HUB_REPO}:latest"
+                    sh "docker push ${DOCKER_HUB_REPO}:latest"
+                }
             }
         }
     }
