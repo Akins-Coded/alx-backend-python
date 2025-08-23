@@ -62,6 +62,17 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            steps {
+                sh '''
+                    . $VENV/bin/activate
+                    cd messaging_app
+                    rm -f test_db.sqlite3  # ensure a fresh db
+                    pytest --ds=messaging_app.settings --maxfail=1 --disable-warnings -q
+                '''
+            }
+        }
+
         stage('Cleanup') {
             steps {
                 cleanWs()

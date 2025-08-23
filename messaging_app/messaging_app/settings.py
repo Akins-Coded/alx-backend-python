@@ -1,6 +1,6 @@
 import environ
 import os
-# from pathlib import Path
+import sys
 from datetime import timedelta
 from pathlib import Path
 # from django.db.utils import OperationalError
@@ -74,19 +74,39 @@ TEMPLATES = [
 WSGI_APPLICATION = "messaging_app.wsgi.application"
 
 # ✅ Database section with fallback
-if env('DATABASE_URL'):
-    DATABASES = {
-        'default': env.db('DATABASE_URL')
-    }
-else:
-    print("⚠️ No DATABASE_URL found, falling back to SQLite.")
+# if env('DATABASE_URL'):
+#     DATABASES = {
+#         'default': env.db('DATABASE_URL')
+#     }
+# else:
+#     print("⚠️ No DATABASE_URL found, falling back to SQLite.")
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': env('SQLITE_PATH'),
+#         }
+#     }
+# ===============================
+if 'test' in sys.argv:  # Running under pytest/unittest
+    print("⚠️ Running tests — using SQLite instead of MySQL")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': env('SQLITE_PATH'),
+            'NAME': BASE_DIR / 'test_db.sqlite3',
         }
     }
-
+else:
+    if env("DATABASE_URL", default=None):
+        DATABASES = {
+            'default': env.db("DATABASE_URL")
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': env("SQLITE_PATH", default=BASE_DIR / "db.sqlite3"),
+            }
+        }
 
 
 # Password validation
