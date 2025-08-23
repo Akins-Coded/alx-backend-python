@@ -18,6 +18,7 @@ pipeline {
                 git branch: 'main',
                     url: 'git@github.com:Akins-Coded/alx-backend-python.git',
                     credentialsId: 'github-ssh'
+                    shallow: true
             }
         }
 
