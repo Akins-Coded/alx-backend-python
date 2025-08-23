@@ -51,7 +51,8 @@ def test_conversation_creation_and_retrieval(api_client, create_user):
     # Fetch conversation list
     response = api_client.get(url)
     assert response.status_code == 200
-    assert len(response.data) == 1
+    assert response.data["count"] == 1
+    assert len(response.data["results"]) == 1
 
     # Bob should see the conversation after being added
     api_client.force_authenticate(user=user2)
