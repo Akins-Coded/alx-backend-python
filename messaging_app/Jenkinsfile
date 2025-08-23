@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = "akinscoded/messaging_app"
-        DOCKER_CREDENTIALS = credentials('dockerhub-credentials')
     }
 
     stages {
@@ -15,28 +14,44 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ."
-                }
+                sh '''
+                    echo "🚀 Building Docker image..."
+                    docker build -t ${DOCKER_HUB_REPO}:${BUILD_NUMBER} .
+                '''
             }
         }
 
         stage('Login to DockerHub') {
             steps {
-                script {
-                    sh "echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials',
+                                                 usernameVariable: 'DOCKER_USER',
+                                                 passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "🔑 Logging into DockerHub..."
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    '''
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    sh "docker push ${DOCKER_HUB_REPO}:${BUILD_NUMBER}"
-                    sh "docker tag ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ${DOCKER_HUB_REPO}:latest"
-                    sh "docker push ${DOCKER_HUB_REPO}:latest"
-                }
+                sh '''
+                    echo "📦 Pushing Docker image with tag ${BUILD_NUMBER}..."
+                    docker push ${DOCKER_HUB_REPO}:${BUILD_NUMBER}
+
+                    echo "📦 Tagging and pushing latest..."
+                    docker tag ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ${DOCKER_HUB_REPO}:latest
+                    docker push ${DOCKER_HUB_REPO}:latest
+                '''
             }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker logout'
+            cleanWs()
         }
     }
 }
