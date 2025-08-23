@@ -1,15 +1,25 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        cleanWs()   // ✅ Clean workspace before build
+    }
+
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
-        DOCKER_IMAGE = "your-dockerhub-username/messaging_app"
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_IMAGE = "akinscoded/messaging_app"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Akins-Coded/alx-backend-python.git'
+                git branch: 'main',
+                    url: 'git@github.com:Akins-Coded/alx-backend-python.git',
+                    credentialsId: 'github-ssh'
+
             }
         }
 
