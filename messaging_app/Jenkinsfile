@@ -46,6 +46,19 @@ pipeline {
                 '''
             }
         }
+
+        stage('Run Docker Container') {
+            steps {
+                sh '''
+                    echo "🏃 Running Docker container on port 9000..."
+                    docker run -d \
+                      --name messaging_app_${BUILD_NUMBER} \
+                      -p 9000:9000 \
+                      --env-file ./messaging_app/.env \
+                      ${DOCKER_HUB_REPO}:${BUILD_NUMBER}
+                '''
+            }
+        }
     }
 
     post {

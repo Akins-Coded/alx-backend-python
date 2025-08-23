@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 # Copy and Install Python dependencies from requirements.txt
 COPY requirements.txt /app/
 
-COPY .env /app/.env
+# COPY .env /app/.env
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
@@ -27,7 +27,7 @@ RUN pip install -r requirements.txt
 # Copy project files
 COPY . /app/
 
-# Expose port 9000
+# Expose port 5 9000
 EXPOSE 9000
 # Start the server
 CMD ["python", "manage.py", "runserver", "0.0.0.0:9000"]
