@@ -2,10 +2,7 @@ pipeline {
     agent any
 
     options {
-        skipDefaultCheckout(true)
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        cleanWs()   // ✅ Clean workspace before build
+        skipDefaultCheckout() // optional
     }
 
     environment {
@@ -14,12 +11,24 @@ pipeline {
     }
 
     stages {
+        stage('Preparation') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'git@github.com:Akins-Coded/alx-backend-python.git',
                     credentialsId: 'github-ssh'
+            }
+        }
 
+        stage('Build') {
+            steps {
+                echo "Building..."
             }
         }
 
